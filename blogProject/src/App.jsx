@@ -27,12 +27,10 @@ function App() {
   console.log(String(import.meta.env.VITE_APPWRITE_COLLECTION_ID));
 
   return (
-    <div className="min-h-screen bg-gray-700">
-      <div className="max-w-screen-xl mx-auto flex">
-        <Header />
-        <main className="flex-grow">{/* <Outlet/> */}</main>
-        <Footer />
-      </div>
+    <div className="min-h-screen bg-gray-700 flex flex-col">
+      <Header />
+      <main className="flex-1">{/* <Outlet/> */}</main>
+      <Footer />
     </div>
   );
 }
