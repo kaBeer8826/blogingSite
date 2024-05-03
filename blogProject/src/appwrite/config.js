@@ -1,99 +1,64 @@
-import { retry } from "@reduxjs/toolkit/query";
-import conf from "../conf/conf";
-import { Client,Databases,ID,Query,Storage } from "appwrite";
+import conf from "../conf/conf.js";
+import { Client, Account, ID } from "appwrite";
+console.log(conf);
 
-export class Services{
-        client = new Client();
-        database;
-        bucket;
-        
-        constructor(){
-            this.client
-            .setEndpoint(conf.appwriteUrl)
-            .setProject(conf.appwriteProductId)
-            this.database = new Databases(this.client)
-            this.bucket = new Storage(this.client)
+export class AuthService {
+  client = new Client();
+  account;
 
-            async createPost({title,slug,content,featuredImage,status,userId}){
-                try {
-                    return await this.database.createDocument(
-                        conf.appwriteDatabaseId,
-                        conf.databaseCollectionId,
-                        slug,
-                        {
-                            title,
-                            content,
-                            featuredImage,
-                            status,
-                            userId
+  constructor() {
+    this.client
+      .setEndpoint('https://cloud.appwrite.io/v1')
+      .setProject('661f7886b3e77daa50d2');
+    this.account = new Account(this.client);
+  }
 
-                    }  
-                    )
-                } catch (error) {
-                    
-                }
-            }
-            
+  async createAccount({ email, password, name }) {
+    try {
+      const userAccount = await this.account.create(
+        ID.unique(),
+        email,
+        password,
+        name
+      );
+      if (userAccount) {
+        // call another method
+        return this.login({ email, password });
+      } else {
+        return userAccount;
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
 
-            async updatePost(slug,{title,content,featuredImage,status,userId}){
-                try {
-                    return await this.database.updateDocument(
-                        conf.appwriteDatabaseId,
-                        conf.databaseCollectionId,
-                        slug,
-                        {
-                            title,
-                            content,
-                            featuredImage,
-                            status
-                        }
-                    )
-                } catch (error) {
-                    throw error
-                }
-            }
-            
-            async deletePost(slug){
-                try {
-                    await this.database.deleteDocument(
-                        conf.appwriteDatabaseId,
-                        conf.databaseCollectionId,
-                        slug
-                    )
-                    return true
-                } catch (error) {
-                    throw error
-                    return false
-                }
-            }
+  async login({ email, password }) {
+    try {
+      return await this.account.createEmailSession(email, password);
+    } catch (error) {
+      throw error;
+    }
+  }
 
-            async getPost(slug){
-                try {
-                    return await this.database.getDocument(
-                        conf.appwriteDatabaseId,
-                        conf.databaseCollectionId,
-                        slug
-                    )
-                } catch (error) {
-                    console.log(error)
-                }
-            }
+  async getCurrentUser() {
+    try {
+      return await this.account.get();
+    } catch (error) {
+      console.log("Appwrite serive :: getCurrentUser :: error", error);
+    }
 
-            async getPosts(quaries = [Query.equal("status","active")]){
-                try {
-                    return await this.database.listDocuments(
-                        conf.appwriteDatabaseId,
-                        conf.databaseCollectionId,
-                        quaries,
-                        100,
-                        1
-                    )
-                } catch (error) {
-                    throw error
-                }
-            }
-        }
-};
+    return null;
+  }
 
-const serives= new Services;
-export default serives;
+  async logout() {
+    try {
+      await this.account.deleteSessions();
+    } catch (error) {
+      console.log("Appwrite serive :: logout :: error", error);
+    }
+  }
+}
+
+const authService = new AuthService();
+
+export default authService;
