@@ -1,10 +1,10 @@
 import React from 'react';
 
-function Logo (){
+function Logo ({width = '100px'}){
     
         return (
             <div>
-                
+                LOGO
             </div>
         );
 }
